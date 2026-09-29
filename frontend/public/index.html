@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopMicro | Event-Driven Order System</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .logo span {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .badge {
+      background: #1e3a5f;
+      color: #93c5fd;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.3rem; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+    .field { margin-bottom: 1.1rem; }
+    input, select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    button {
+      width: 100%;
+      padding: 0.95rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    button:hover:not(:disabled) { background: var(--primary-dark); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    #status {
+      margin-top: 1.3rem;
+      padding: 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    #status.ok {
+      display: block;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.35);
+      color: #86efac;
+    }
+    #status.err {
+      display: block;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.35);
+      color: #fca5a5;
+    }
+    .oid {
+      font-family: monospace;
+      font-size: 0.78rem;
+      background: rgba(0,0,0,0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      display: inline-block;
+      margin-top: 0.4rem;
+    }
+    footer {
+      text-align: center;
+      padding: 1.2rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><span>🛒</span> ShopMicro</div>
+    <span class="badge">Event-Driven PoC</span>
+  </header>
+
+  <main>
+    <div class="card">
+      <h1>Place an Order</h1>
+      <p class="sub">Orders flow through RabbitMQ microservices</p>
+
+      <form id="form">
+        <div class="field">
+          <label for="product">Product</label>
+          <select id="product" required>
+            <option value="Laptop">Laptop — ₱45,000</option>
+            <option value="Smartphone">Smartphone — ₱25,000</option>
+            <option value="Headphones">Headphones — ₱3,500</option>
+            <option value="Monitor">Monitor — ₱12,000</option>
+            <option value="Keyboard">Keyboard — ₱2,800</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="quantity">Quantity</label>
+          <input type="number" id="quantity" min="1" max="20" value="1" required />
+        </div>
+
+        <div class="field">
+          <label for="customer">Customer Name</label>
+          <input type="text" id="customer" placeholder="Juan Dela Cruz" required />
+        </div>
+
+        <button type="submit" id="btn">Place Order</button>
+      </form>
+
+      <div id="status"></div>
+    </div>
+  </main>
+
+  <footer>
+    PL4107 • System Integration & Architecture 2<br>
+    Occidental Mindoro State University
+  </footer>
+
+  <script>
+    const API = 'http://localhost:8080';
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn');
+      const status = document.getElementById('status');
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      status.className = '';
+      status.style.display = 'none';
+
+      const body = {
+        product: document.getElementById('product').value,
+        quantity: Number(document.getElementById('quantity').value),
+        customer: document.getElementById('customer').value.trim()
+      };
+
+      try {
+        const res = await fetch(API + '/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+
+        status.className = 'ok';
+        status.innerHTML = `
+          <strong>✅ Order placed!</strong><br><br>
+          Product: ${data.product} × ${data.quantity}<br>
+          Customer: ${data.customer}<br>
+          <span class="oid">${data.orderId}</span>
+        `;
+      } catch (err) {
+        status.className = 'err';
+        status.innerHTML = `<strong>❌ Error</strong><br>${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    });
+  </script>
+</body>
+</html>
